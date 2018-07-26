@@ -19,7 +19,6 @@
 #include <dlfcn.h> // dlopen, dlsym
 #include <libgen.h>
 #include <unistd.h>
-#include <sys/resource.h>
 #include <codecvt>
 #include <locale>
 
@@ -380,8 +379,6 @@ void AndroidPlatform::onUrlComplete(JNIEnv* _jniEnv, jlong _jRequestHandle, jbyt
 }
 
 void setCurrentThreadPriority(int priority) {
-    int  tid = gettid();
-    setpriority(PRIO_PROCESS, tid, priority);
 }
 
 void labelPickCallback(jobject listener, const Tangram::LabelPickResult* labelPickResult) {

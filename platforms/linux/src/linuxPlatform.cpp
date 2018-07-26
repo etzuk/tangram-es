@@ -6,9 +6,6 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <libgen.h>
-#include <unistd.h>
-#include <sys/resource.h>
-#include <sys/syscall.h>
 
 #if defined(TANGRAM_LINUX)
 #include <GLFW/glfw3.h>
@@ -78,8 +75,6 @@ void LinuxPlatform::cancelUrlRequest(UrlRequestHandle _request) {
 LinuxPlatform::~LinuxPlatform() {}
 
 void setCurrentThreadPriority(int priority) {
-    int tid = syscall(SYS_gettid);
-    setpriority(PRIO_PROCESS, tid, priority);
 }
 
 void initGLExtensions() {
