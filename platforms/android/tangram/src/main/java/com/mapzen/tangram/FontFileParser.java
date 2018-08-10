@@ -49,11 +49,13 @@ class FontFileParser {
             return;
         }
 
-        if (fallbackFontDict.indexOfKey(weight) < 0) {
-            fallbackFontDict.put(weight, new ArrayList<String>());
-        }
+        synchronized(this) {
+            if (fallbackFontDict.indexOfKey(weight) < 0) {
+                fallbackFontDict.put(weight, new ArrayList<String>());
+            }
 
-        fallbackFontDict.get(weight).add(fullFileName);
+            fallbackFontDict.get(weight).add(fullFileName);
+        }
     }
 
 
@@ -138,7 +140,9 @@ class FontFileParser {
 
                         // Same here, font boldness is non-available for android < 5.0 file
                         // description, we default to integer boldness of 400 by default
-                        fontDict.put(fontname + "_400_" + style, systemFontPath + filename);
+                        synchronized(this) {
+                            fontDict.put(fontname + "_400_" + style, systemFontPath + filename);
+                        }
 
                         if ("sans-serif".equals(fontname) && "normal".equals(style)) {
                             addFallback(400, filename);
@@ -218,7 +222,9 @@ class FontFileParser {
 
                             final String filename = parser.nextText();
                             final String key = name + "_" + weightStr + "_" + styleStr;
-                            fontDict.put(key, systemFontPath + filename);
+                            synchronized(this) {
+                                fontDict.put(key, systemFontPath + filename);
+                            }
 
                             if ("sans-serif".equals(name) && "normal".equals(styleStr)) {
                                 addFallback(Integer.valueOf(weightStr), filename);
@@ -243,14 +249,16 @@ class FontFileParser {
                     aliasWeights = Collections.singletonList(weightStr);
                 }
 
-                for (final String weight : aliasWeights) {
-                    // Only 2 styles possible based on /etc/fonts.xml
-                    // Normal style
-                    fontFilename = fontDict.get(toName + "_" + weight + "_normal");
-                    fontDict.put(aliasName + "_" + weight + "_normal", fontFilename);
-                    // Italic style
-                    fontFilename = fontDict.get(toName + "_" + weight + "_italic");
-                    fontDict.put(aliasName + "_" + weight + "_italic", fontFilename);
+                synchronized(this) {
+                    for (final String weight : aliasWeights) {
+                        // Only 2 styles possible based on /etc/fonts.xml
+                        // Normal style
+                        fontFilename = fontDict.get(toName + "_" + weight + "_normal");
+                        fontDict.put(aliasName + "_" + weight + "_normal", fontFilename);
+                        // Italic style
+                        fontFilename = fontDict.get(toName + "_" + weight + "_italic");
+                        fontDict.put(aliasName + "_" + weight + "_italic", fontFilename);
+                    }
                 }
             } else {
                 skip(parser);
@@ -323,7 +331,7 @@ class FontFileParser {
         }
     }
 
-    public String getFontFile(final String _key) {
+    public synchronized String getFontFile(final String _key) {
         return fontDict.containsKey(_key) ? fontDict.get(_key) : "";
     }
 
@@ -333,7 +341,7 @@ class FontFileParser {
      * The weightHint value determines the closest fallback hint for boldness
      * See /etc/fonts/font_fallback for documentation
      */
-    public String getFontFallback(final int importance, final int weightHint) {
+    public synchronized String getFontFallback(final int importance, final int weightHint) {
         int diffWeight = Integer.MAX_VALUE;
         String fallback = "";
 

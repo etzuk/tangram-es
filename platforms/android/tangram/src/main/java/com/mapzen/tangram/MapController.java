@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import android.graphics.PointF;
 import android.opengl.GLSurfaceView;
 import android.opengl.GLSurfaceView.Renderer;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Handler;
 import android.support.annotation.IntRange;
@@ -267,8 +268,13 @@ public class MapController implements Renderer {
             httpHandler = handler;
         }
 
-        // Parse font file description
-        fontFileParser.parse();
+        // Parse font file description - just run in a background thread
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                fontFileParser.parse();
+            }
+        }).start();
 
         mapPointer = nativeInit(this, assetManager);
         if (mapPointer <= 0) {
